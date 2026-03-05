@@ -87,25 +87,29 @@ export function renderHomePage() {
             使用 QQ 登录
           </a>
 
-          <!-- 使用须知 -->
+          <!-- 调用说明 -->
           <div class="bg-slate-50/80 rounded-2xl p-6 text-left border border-slate-100">
-            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">使用须知</h2>
+            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">API 调用说明</h2>
             <ul class="space-y-3 text-sm text-slate-600">
               <li class="flex items-start gap-2.5">
                 <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
-                <span>通过 <code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">/login</code> 跳转发起 QQ 登录授权</span>
+                <span>外部站点通过 <code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">/login?from=回调URL</code> 发起登录</span>
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
-                <span>认证成功后将自动跳转回 <b class="text-slate-700">lz-0315.com</b></span>
+                <span>认证成功后 <b class="text-slate-700">立即回调</b> 到来源站点，携带 openid、nickname 等用户信息</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
+                <span>仅接受 <code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">ALLOWED_ORIGINS</code> 白名单中的域名回调</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
+                <span>仅允许通过 <code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">REDIRECT_URI</code> 域名访问，其他域名被拦截</span>
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
                 <span>由 Cloudflare Edge 网络提供全球加速与隐私保护</span>
-              </li>
-              <li class="flex items-start gap-2.5">
-                <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
-                <span>支持多域名部署，<code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">REDIRECT_URI</code> 推荐填写 <code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">/qq</code></span>
               </li>
             </ul>
           </div>
@@ -133,8 +137,6 @@ export function renderResultPage(user) {
       <head>
         ${sharedHead('认证成功 - 辛巳认证中心')}
         <style>
-          .progress-bar { height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
-          .progress-inner { height: 100%; background: linear-gradient(90deg,#12b7f5,#3b82f6); width: 0%; transition: width 3s linear; }
           @keyframes checkPop {
             0%   { transform: scale(0) rotate(-45deg); opacity: 0; }
             60%  { transform: scale(1.15) rotate(0); opacity: 1; }
@@ -167,17 +169,9 @@ export function renderResultPage(user) {
           </div>
           <div class="text-slate-400 text-xs mb-5 font-mono bg-slate-50 px-3 py-1.5 rounded-lg">OpenID: ${user.openid}</div>
 
-          <!-- 进度条 -->
-          <div class="w-full mb-3">
-            <div class="progress-bar"><div class="progress-inner" id="progress"></div></div>
-          </div>
-          <div class="text-green-600 font-semibold text-sm mb-2">✅ 认证成功，3 秒后自动返回主站…</div>
-          <a href="https://lz-0315.com" class="text-blue-500 hover:text-blue-600 text-sm underline underline-offset-2">如未跳转请点此</a>
-        </div>
-        <script>
-          setTimeout(() => { document.getElementById('progress').style.width = '100%'; }, 50);
-          setTimeout(() => { window.location.href = 'https://lz-0315.com'; }, 3000);
-        <\/script>
+          <div class="text-green-600 font-semibold text-sm mb-4">✅ 认证成功</div>
+          <p class="text-slate-400 text-xs mb-4">此页面为直接访问结果。如需回调，请从外部站点通过 <code class="bg-blue-50 text-blue-600 px-1 rounded text-xs">/login?from=回调URL</code> 发起登录。</p>
+          <a href="/" class="text-blue-500 hover:text-blue-600 text-sm underline underline-offset-2">返回首页</a>
       </body>
     </html>
   `;
@@ -216,9 +210,10 @@ export function renderErrorPage(msg) {
 // ===================== 管理/初始化页 =====================
 export function renderAdminPage(env) {
   const vars = [
-    { key: 'QQ_APP_ID',    value: env.QQ_APP_ID },
-    { key: 'QQ_APP_KEY',   value: env.QQ_APP_KEY },
-    { key: 'REDIRECT_URI', value: env.REDIRECT_URI }
+    { key: 'QQ_APP_ID',       value: env.QQ_APP_ID },
+    { key: 'QQ_APP_KEY',      value: env.QQ_APP_KEY },
+    { key: 'REDIRECT_URI',    value: env.REDIRECT_URI },
+    { key: 'ALLOWED_ORIGINS', value: env.ALLOWED_ORIGINS }
   ];
   return `
     <!DOCTYPE html>
@@ -251,7 +246,8 @@ export function renderAdminPage(env) {
             `).join('')}
           </div>
 
-          <p class="text-slate-400 text-xs mb-5">REDIRECT_URI 推荐: <code class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-xs font-mono">https://auth.lz-0315.com/qq</code></p>
+          <p class="text-slate-400 text-xs mb-3">REDIRECT_URI 填写纯域名，如 <code class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-xs font-mono">auth.lz-0315.com</code></p>
+          <p class="text-slate-400 text-xs mb-5">ALLOWED_ORIGINS 填写允许回调的域名（逗号分隔），如 <code class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-xs font-mono">lz-0315.com,www.lz-0315.com</code></p>
 
           <a href="/login"
              class="btn-primary w-full flex items-center justify-center gap-2 py-3 text-white rounded-2xl font-bold text-base">

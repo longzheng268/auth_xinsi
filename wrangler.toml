@@ -1,10 +1,14 @@
 name = "auth_xinsi"
 main = "src/index.js"
-workers_dev = true
+workers_dev = false
 compatibility_date = "2026-03-05"
 
 [vars]
-# QQ OAuth2.0 相关环境变量
+# ===== 以下值请在 Cloudflare Dashboard > Worker > Settings > Variables 中设置真实值 =====
+# QQ 互联应用凭据
 QQ_APP_ID = ""
 QQ_APP_KEY = ""
+# 认证中心部署域名（纯域名，如 auth.lz-0315.com，用于域名守卫和拼接 QQ 回调地址）
 REDIRECT_URI = ""
+# 允许回调的来源域名（逗号分隔，如 lz-0315.com,www.lz-0315.com，支持 * 或 *.example.com 通配符，留空或 * 表示不限制）
+ALLOWED_ORIGINS = ""

@@ -11,31 +11,55 @@ const securityHeaders = {
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-    const isConfigured = env.QQ_APP_ID && env.QQ_APP_KEY;
+    const isConfigured = env.QQ_APP_ID && env.QQ_APP_KEY && env.REDIRECT_URI;
 
-    // 1. 配置引导页
+    // ========== 域名守卫 ==========
+    // 仅允许通过 REDIRECT_URI 配置的域名访问，屏蔽 workers.dev 等其他入口
+    if (env.REDIRECT_URI && url.hostname !== env.REDIRECT_URI) {
+      return htmlResponse(renderErrorPage(
+        `此认证服务仅可通过 <b>${env.REDIRECT_URI}</b> 访问。<br>当前域名 <b>${url.hostname}</b> 未被授权。`
+      ), 403);
+    }
+
+    // 1. 配置引导页（未配置环境变量时）
     if (!isConfigured && url.pathname === "/") {
       return new Response(renderAdminPage(env), { headers: securityHeaders });
     }
 
-    // 2. QQ 登录入口，生成 state
+    // 2. 登录入口 /login?from=回调地址
     if (url.pathname === "/login") {
-      const state = cryptoRandomString(16);
-      let redirectUri = env.REDIRECT_URI || '/qq';
-      if (redirectUri.startsWith('/')) {
-        redirectUri = url.origin + redirectUri;
+      if (!isConfigured) {
+        return htmlResponse(renderErrorPage("认证中心尚未配置，请先设置环境变量。"), 500);
       }
-      const loginUrl = `https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=${env.QQ_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
-      return new Response(null, {
-        status: 302,
-        headers: {
-          'Location': loginUrl,
-          'Set-Cookie': `qq_oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Secure`,
+
+      const from = url.searchParams.get("from") || '';
+
+      // 校验 from 来源域名是否在 ALLOWED_ORIGINS 白名单中
+      if (from) {
+        if (!isAllowedOrigin(from, env.ALLOWED_ORIGINS)) {
+          return htmlResponse(renderErrorPage(
+            `回调域名未授权。<br>请在环境变量 <b>ALLOWED_ORIGINS</b> 中添加该域名。`
+          ), 403);
         }
-      });
+      }
+
+      const state = cryptoRandomString(16);
+      // 用 REDIRECT_URI（纯域名）拼接 QQ 回调地址
+      const qqCallbackUri = `https://${env.REDIRECT_URI}/qq`;
+      const loginUrl = `https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=${env.QQ_APP_ID}&redirect_uri=${encodeURIComponent(qqCallbackUri)}&state=${state}`;
+
+      // 写入 state 和 from 到 cookie（Max-Age=600，10 分钟超时）
+      const headers = new Headers();
+      headers.set('Location', loginUrl);
+      headers.append('Set-Cookie', `qq_oauth_state=${state}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=600`);
+      if (from) {
+        headers.append('Set-Cookie', `qq_oauth_from=${encodeURIComponent(from)}; Path=/; HttpOnly; SameSite=Lax; Secure; Max-Age=600`);
+      }
+
+      return new Response(null, { status: 302, headers });
     }
 
-    // 3. QQ 回调
+    // 3. QQ 回调 /qq
     if (url.pathname === "/qq") {
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state");
@@ -48,13 +72,11 @@ export default {
       }
 
       try {
+        const qqCallbackUri = `https://${env.REDIRECT_URI}/qq`;
+
         // A. 换取 Access Token
-        let redirectUri = env.REDIRECT_URI || '/qq';
-        if (redirectUri.startsWith('/')) {
-          redirectUri = url.origin + redirectUri;
-        }
         const tokenResp = await fetch(
-          `https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&client_id=${env.QQ_APP_ID}&client_secret=${env.QQ_APP_KEY}&code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}&fmt=json`
+          `https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&client_id=${env.QQ_APP_ID}&client_secret=${env.QQ_APP_KEY}&code=${code}&redirect_uri=${encodeURIComponent(qqCallbackUri)}&fmt=json`
         );
         const tokenData = await tokenResp.json();
         if (!tokenData.access_token) {
@@ -78,10 +100,31 @@ export default {
         }
         userInfo.openid = meData.openid;
 
-        // D. 返回认证成功页
+        // D. 判断是否有来源回调
+        const from = cookie.qq_oauth_from ? decodeURIComponent(cookie.qq_oauth_from) : '';
+
+        if (from && isAllowedOrigin(from, env.ALLOWED_ORIGINS)) {
+          // ===== 有来源：立即 302 回调（0s 超时），携带用户信息 =====
+          const callbackUrl = new URL(from);
+          callbackUrl.searchParams.set('openid', userInfo.openid);
+          callbackUrl.searchParams.set('nickname', userInfo.nickname || '');
+          callbackUrl.searchParams.set('avatar', userInfo.figureurl_qq_2 || userInfo.figureurl_qq_1 || '');
+          callbackUrl.searchParams.set('gender', userInfo.gender || '');
+          callbackUrl.searchParams.set('province', userInfo.province || '');
+          callbackUrl.searchParams.set('city', userInfo.city || '');
+
+          // 清除 cookie 并立即跳转
+          const headers = new Headers();
+          headers.set('Location', callbackUrl.toString());
+          headers.append('Set-Cookie', 'qq_oauth_state=; Path=/; Max-Age=0');
+          headers.append('Set-Cookie', 'qq_oauth_from=; Path=/; Max-Age=0');
+          return new Response(null, { status: 302, headers });
+        }
+
+        // ===== 无来源：直接访问，显示结果页（不自动跳转） =====
         return new Response(renderResultPage(userInfo), { headers: securityHeaders });
       } catch (e) {
-        return htmlResponse(renderErrorPage("服务器异常，请稍后重试。\n" + e.message), 500);
+        return htmlResponse(renderErrorPage("服务器异常，请稍后重试。<br>" + e.message), 500);
       }
     }
 
@@ -90,12 +133,13 @@ export default {
   }
 };
 
-// --- 工具函数 ---
+// ========== 工具函数 ==========
+
 function htmlResponse(html, status = 200) {
   return new Response(html, { status, headers: securityHeaders });
 }
+
 function cryptoRandomString(length) {
-  // 生成随机字符串（仅小写字母和数字，适合 state）
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   const arr = new Uint8Array(length);
@@ -113,4 +157,36 @@ function parseCookie(cookieStr) {
     if (k && v) obj[k.trim()] = decodeURIComponent(v.trim());
   });
   return obj;
+}
+
+/**
+ * 校验 from URL 的域名是否在 ALLOWED_ORIGINS 白名单中
+ * ALLOWED_ORIGINS 格式: 逗号分隔的域名，如 "lz-0315.com,www.lz-0315.com"
+ * 支持子域名匹配：白名单有 lz-0315.com 则 www.lz-0315.com 也允许
+ */
+/**
+ * 校验 from URL 的域名是否在 ALLOWED_ORIGINS 白名单中
+ * ALLOWED_ORIGINS 支持：
+ *   - 为空或 * 表示允许所有
+ *   - *.example.com 通配符匹配任意子域名
+ *   - 普通域名支持子域名后缀匹配
+ */
+function isAllowedOrigin(fromUrl, allowedOriginsStr) {
+  try {
+    if (!allowedOriginsStr || allowedOriginsStr.trim() === '*' ) return true;
+    const fromHostname = new URL(fromUrl).hostname.toLowerCase();
+    const allowed = allowedOriginsStr.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+    return allowed.some(origin => {
+      if (origin === '*') return true;
+      if (origin.startsWith('*.')) {
+        // 通配符 *.example.com 匹配任意子域名
+        const base = origin.slice(2);
+        return fromHostname.endsWith('.' + base);
+      }
+      // 普通域名，支持自身和子域名
+      return fromHostname === origin || fromHostname.endsWith('.' + origin);
+    });
+  } catch {
+    return false;
+  }
 }
