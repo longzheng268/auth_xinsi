@@ -63,8 +63,13 @@ export function renderHomePage() {
         <main class="relative z-10 flex flex-col items-center justify-center w-full min-h-[80vh]">
           <div class="card-float bg-white/95 shadow-2xl rounded-3xl p-10 flex flex-col items-center max-w-lg w-full border border-blue-100 mt-10">
             <div class="flex flex-col items-center gap-3 mb-7">
-              <div class="logo-gradient w-24 h-24 rounded-full flex items-center justify-center shadow-xl border-4 border-white animate-spin-slow">
-                <img src="https://www.lz-0315.com/favicon.ico" class="w-16 h-16 rounded-full border-2 border-blue-200 bg-white" alt="logo" />
+              <div class="relative w-24 h-24 flex items-center justify-center">
+                <div class="absolute inset-0 flex items-center justify-center">
+                  <div class="logo-gradient rounded-full w-24 h-24 overflow-hidden" style="clip-path: circle(50% at 50% 50%);">
+                    <div id="logo-arc" style="width:100%;height:100%;clip-path:polygon(50% 50%,100% 0,100% 100%);background:inherit;"></div>
+                  </div>
+                </div>
+                <img src="https://www.lz-0315.com/favicon.ico" class="w-16 h-16 rounded-full border-2 border-blue-200 bg-white z-10" alt="logo" />
               </div>
               <span class="text-4xl font-extrabold text-blue-700 tracking-tight drop-shadow-sm mt-2 flex items-center gap-2">
                 <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#3b82f6"/><text x="12" y="17" text-anchor="middle" font-size="14" fill="#fff" font-family="Arial">辛巳</text></svg>
@@ -96,14 +101,15 @@ export function renderHomePage() {
               <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 3a7 7 0 110 14 7 7 0 010-14z" fill="#60a5fa"/></svg>
               © 2026 <a href="https://www.lz-0315.com" class="underline hover:text-blue-500">辛巳学习网</a>
               <span class="mx-1">|</span>
-              <a href="https://github.com/lz-0315/auth_xinsi" class="underline hover:text-blue-500" target="_blank" rel="noopener">开源仓库</a>
+              <a href="https://github.com/lz-0315/auth_xinsi" class="underline hover:text-blue-500" target="_blank" rel="noopener">该Auth的开源仓库</a>
             </div>
           </div>
         </main>
         <script>
-          // logo 旋转动画
-          document.querySelectorAll('.logo-gradient').forEach(el => {
-            el.animate([
+          // 只让logo外圈渐变弧旋转，且裁剪为圆形局部
+          const arc = document.getElementById('logo-arc');
+          if (arc) {
+            arc.animate([
               { transform: 'rotate(0deg)' },
               { transform: 'rotate(360deg)' }
             ], {
@@ -111,7 +117,7 @@ export function renderHomePage() {
               iterations: Infinity,
               easing: 'linear'
             });
-          });
+          }
         </script>
       </body>
     </html>
