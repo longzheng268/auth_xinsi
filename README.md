@@ -12,7 +12,7 @@
 4. 添加以下环境变量：
    - `QQ_APP_ID`: 你的 QQ 互联 App ID
    - `QQ_APP_KEY`: 你的 QQ 互联 App Key
-   - `REDIRECT_URI`: 你的回调地址（如 `https://your-domain.com/qq`）
+   - `REDIRECT_URI`: `/qq`（推荐，代码会自动拼接当前域名）
 5. 在 **Triggers** 中绑定你的自定义域名。
 
 ## 🛠️ 技术栈

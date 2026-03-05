@@ -15,7 +15,12 @@ export default {
       // 生成随机 state
       const state = cryptoRandomString(16);
       // 设置 state 到 cookie
-      const loginUrl = `https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=${env.QQ_APP_ID}&redirect_uri=${encodeURIComponent(env.REDIRECT_URI || url.origin + '/qq')}&state=${state}`;
+      // 支持 REDIRECT_URI 仅填写路径（如 /qq），自动拼接域名
+      let redirectUri = env.REDIRECT_URI || '/qq';
+      if (redirectUri.startsWith('/')) {
+        redirectUri = url.origin + redirectUri;
+      }
+      const loginUrl = `https://graph.qq.com/oauth2.0/authorize?response_type=code&client_id=${env.QQ_APP_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}`;
       return new Response('', {
         status: 302,
         headers: {
@@ -37,8 +42,13 @@ export default {
       }
       try {
         // A. 换取 Access Token
+        // 支持 REDIRECT_URI 仅填写路径（如 /qq），自动拼接域名
+        let redirectUri = env.REDIRECT_URI || '/qq';
+        if (redirectUri.startsWith('/')) {
+          redirectUri = url.origin + redirectUri;
+        }
         const tokenResp = await fetch(
-          `https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&client_id=${env.QQ_APP_ID}&client_secret=${env.QQ_APP_KEY}&code=${code}&redirect_uri=${encodeURIComponent(env.REDIRECT_URI || url.origin + '/qq')}&fmt=json`
+          `https://graph.qq.com/oauth2.0/token?grant_type=authorization_code&client_id=${env.QQ_APP_ID}&client_secret=${env.QQ_APP_KEY}&code=${code}&redirect_uri=${encodeURIComponent(redirectUri)}&fmt=json`
         );
         const tokenData = await tokenResp.json();
         if (!tokenData.access_token) {
