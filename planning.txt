@@ -1,0 +1,49 @@
+# Project: Auth-Xinsi (Cloudflare Workers QQ OAuth2.0 Center)
+# Context: 
+- A serverless authentication middleware for lz-0315.com (辛巳学习网).
+- Frontend is a static site; Backend is Cloudflare Workers.
+- Purpose: Handle QQ Login, exchange tokens, and fetch user info.
+
+## 1. Current Progress
+- Basic Worker structure implemented.
+- GitHub repository initialized: longzheng268/auth_xinsi.
+- README and Deploy Button logic defined.
+
+## 2. To-Do Tasks for Copilot
+
+### [Task 1] UI/UX Enhancement
+- Refine `renderAdminPage()`:
+  - Add a modern CSS style (using Tailwind CDN or system fonts).
+  - Add a "Environment Variable Status Checker" that visually shows if QQ_APP_ID/KEY is missing.
+- Refine `renderResultPage(user)`:
+  - Create a professional "Login Success" card.
+  - Display user details (Avatar, Nickname, Gender, Province/City).
+  - Implement a countdown progress bar before redirecting to https://lz-0315.com.
+
+### [Task 2] Robust OAuth Logic
+- Implement `state` parameter validation: 
+  - Generate a random string for `state` and verify it upon callback to prevent CSRF.
+- Add detailed Error Handling:
+  - Handle common QQ API errors (e.g., ret != 0).
+  - Display user-friendly error messages instead of raw JSON on the frontend.
+
+### [Task 3] Security & Headers
+- Add Security Headers: `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`.
+- Ensure CORS policy only allows requests from `*.lz-0315.com`.
+
+### [Task 4] Documentation & CI/CD
+- Generate a `wrangler.toml` template with placeholder vars.
+- Update `README.md` with:
+  - A table of Environment Variables.
+  - A "How it works" section describing the flow from Static Site -> Worker -> QQ -> Worker -> Static Site.
+
+## 3. Technical Constraints
+- Language: JavaScript (ES Modules).
+- Environment: Cloudflare Workers (Service Worker or Module Worker).
+- No external heavy dependencies (Keep it lightweight for Edge).
+- Output: Clean, readable, and ready-to-deploy code.
+
+## 4. Final Goal
+A "One-Click Deploy" solution that any user can fork, click "Deploy to Cloudflare", fill in their QQ API credentials, and have a working Auth Center immediately.
+
+最后记得生成一个.gitignore文件。
