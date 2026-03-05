@@ -1,125 +1,264 @@
-// 前端首页渲染逻辑（仅UI相关JS）
+// 前端 UI 渲染逻辑 - 2026 辛巳认证中心 V2.0
+// 统一毛玻璃 (Glassmorphism) 风格
+
+const LOGO_URL = "https://github.com/longzheng268/homepage_xinsi/blob/main/assets/img/%E5%A4%B4%E5%83%8F.png?raw=true";
+
+// 公共 <head> 样式，所有页面共用
+function sharedHead(title = '辛巳学习网认证中心') {
+  return `
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>${title}</title>
+    <script src="https://cdn.tailwindcss.com"><\/script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" />
+    <link rel="icon" href="${LOGO_URL}" />
+    <style>
+      body {
+        font-family: 'Inter', 'Microsoft YaHei', system-ui, -apple-system, sans-serif;
+        background: #f0f4f8;
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.82);
+        backdrop-filter: blur(16px) saturate(1.8);
+        -webkit-backdrop-filter: blur(16px) saturate(1.8);
+        border: 1px solid rgba(255, 255, 255, 0.35);
+      }
+      .hero-gradient {
+        background: radial-gradient(circle at top right, #dbeafe 0%, #f0f9ff 50%, #eff6ff 100%);
+      }
+      @keyframes slideUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+      .animate-slide-up {
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      @keyframes pulse-ring {
+        0%   { transform: scale(1);   opacity: 0.25; }
+        50%  { transform: scale(1.1); opacity: 0.12; }
+        100% { transform: scale(1);   opacity: 0.25; }
+      }
+      .pulse-ring { animation: pulse-ring 3s ease-in-out infinite; }
+      .btn-primary {
+        background: #12b7f5;
+        transition: all 0.3s ease;
+      }
+      .btn-primary:hover {
+        background: #0ea5e9;
+        transform: translateY(-2px);
+        box-shadow: 0 12px 20px -4px rgba(18, 183, 245, 0.35);
+      }
+      .btn-primary:active { transform: scale(0.97); }
+    </style>
+  `;
+}
+
+// ===================== 首页 =====================
 export function renderHomePage() {
   return `
+    <!DOCTYPE html>
     <html lang="zh-CN">
       <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width,initial-scale=1" />
-        <title>辛巳学习网认证中心</title>
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.3/dist/tailwind.min.css" rel="stylesheet" />
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" />
-        <link rel="icon" href="https://www.lz-0315.com/favicon.ico" />
-        <style>
-          html, body { height: 100%; font-family: 'Inter', 'Microsoft YaHei', Arial, sans-serif; }
-          body { min-height: 100vh; background: linear-gradient(135deg, #e0e7ff 0%, #bae6fd 100%); }
-          .hero-bg {
-            position: absolute;
-            top: 0; left: 0; width: 100vw; height: 44vh;
-            background: radial-gradient(ellipse at 60% 0%, #a5b4fc 0%, #60a5fa 60%, #38bdf8 100%);
-            z-index: 0;
-            filter: blur(1.5px) brightness(1.08);
-            opacity: 0.95;
-            animation: heroFadeIn 1.2s cubic-bezier(.4,2,.6,1) 0.1s both;
-          }
-          @keyframes heroFadeIn {
-            from { opacity: 0; transform: translateY(-40px) scale(1.04); }
-            to { opacity: 0.95; transform: none; }
-          }
-          .logo-gradient {
-            background: conic-gradient(from 180deg at 50% 50%, #60a5fa 0deg, #a5b4fc 90deg, #38bdf8 180deg, #818cf8 270deg, #60a5fa 360deg);
-          }
-          .card-float {
-            box-shadow: 0 8px 32px 0 rgba(56,189,248,0.18), 0 1.5px 8px 0 rgba(59,130,246,0.10);
-            backdrop-filter: blur(2.5px);
-            border-radius: 2rem;
-            border: 1.5px solid #dbeafe;
-            animation: cardPop 0.9s cubic-bezier(.4,2,.6,1) 0.2s both;
-          }
-          @keyframes cardPop {
-            from { opacity: 0; transform: scale(0.98) translateY(40px); }
-            to { opacity: 1; transform: none; }
-          }
-          .btn-qq {
-            background: linear-gradient(90deg,#38bdf8 0%,#60a5fa 100%);
-            box-shadow: 0 2px 12px 0 rgba(59,130,246,0.10);
-            transition: all .18s cubic-bezier(.4,2,.6,1);
-          }
-          .btn-qq:hover {
-            background: linear-gradient(90deg,#2563eb 0%,#38bdf8 100%);
-            transform: scale(1.045) translateY(-2px);
-            box-shadow: 0 4px 18px 0 rgba(59,130,246,0.18);
-          }
-          .btn-qq:active {
-            transform: scale(0.98);
-          }
-          .divider {
-            width: 100%; height: 1px; background: linear-gradient(90deg,#e0e7ff 0,#bae6fd 100%); margin: 2rem 0 1.5rem 0;
-            opacity: 0.7;
-          }
-        </style>
+        ${sharedHead()}
       </head>
-      <body class="relative min-h-screen flex flex-col items-center justify-center bg-transparent">
-        <div class="hero-bg"></div>
-        <main class="relative z-10 flex flex-col items-center justify-center w-full min-h-[80vh]">
-          <div class="card-float bg-white/95 shadow-2xl rounded-3xl p-10 flex flex-col items-center max-w-lg w-full border border-blue-100 mt-10">
-            <div class="flex flex-col items-center gap-3 mb-7">
-              <div class="relative w-24 h-24 flex items-center justify-center">
-                <div class="absolute inset-0 flex items-center justify-center">
-                  <div class="logo-gradient rounded-full w-24 h-24 overflow-hidden" style="clip-path: circle(50% at 50% 50%);">
-                    <div id="logo-arc" style="width:100%;height:100%;clip-path:polygon(50% 50%,100% 0,100% 100%);background:inherit;"></div>
-                  </div>
-                </div>
-                <img src="https://www.lz-0315.com/favicon.ico" class="w-16 h-16 rounded-full border-2 border-blue-200 bg-white z-10" alt="logo" />
-              </div>
-              <span class="text-4xl font-extrabold text-blue-700 tracking-tight drop-shadow-sm mt-2 flex items-center gap-2">
-                <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#3b82f6"/><text x="12" y="17" text-anchor="middle" font-size="14" fill="#fff" font-family="Arial">辛巳</text></svg>
-                认证中心
-              </span>
-              <span class="text-base text-blue-400 font-semibold tracking-wide">Cloudflare Workers · QQ OAuth2.0</span>
-            </div>
-            <div class="text-lg text-gray-700 mb-2 font-semibold flex items-center gap-2">
-              <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 3a7 7 0 110 14 7 7 0 010-14z" fill="#60a5fa"/></svg>
-              欢迎使用 <b>辛巳学习网认证中心</b>
-            </div>
-            <a href="/login" class="btn-qq px-10 py-3 text-white rounded-2xl shadow-xl font-bold text-lg tracking-wide mb-4 mt-2 scale-100 hover:scale-105 active:scale-95 duration-150 flex items-center gap-2">
-              <svg width="22" height="22" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#38bdf8"/><path d="M8 12l2.5 2.5L16 9" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              QQ 登录
-            </a>
-            <div class="divider"></div>
-            <div class="w-full">
-              <div class="text-base font-semibold text-blue-700 mb-2">调用/使用说明</div>
-              <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-5 text-sm text-gray-700 shadow-sm">
-                <ol class="list-decimal list-inside space-y-1">
-                  <li>前端静态站点通过 <span class="font-mono text-blue-600">/login</span> 跳转发起 QQ 登录。</li>
-                  <li>用户授权后，回调 <span class="font-mono text-blue-600">/qq</span>，自动获取用户信息。</li>
-                  <li>登录成功后页面会自动跳转回主站，可根据需要自定义跳转逻辑。</li>
-                  <li>支持多域名部署，<span class="font-mono text-blue-600">REDIRECT_URI</span> 推荐填写 <span class="font-mono text-blue-600">/qq</span>。</li>
-                </ol>
-              </div>
-            </div>
-            <div class="mt-10 text-xs text-gray-400 flex items-center gap-2 select-none">
-              <svg width="16" height="16" fill="none" viewBox="0 0 24 24"><path d="M12 2a10 10 0 100 20 10 10 0 000-20zm0 3a7 7 0 110 14 7 7 0 010-14z" fill="#60a5fa"/></svg>
-              © 2026 <a href="https://www.lz-0315.com" class="underline hover:text-blue-500">辛巳学习网</a>
-              <span class="mx-1">|</span>
-              <a href="https://github.com/lz-0315/auth_xinsi" class="underline hover:text-blue-500" target="_blank" rel="noopener">该Auth的开源仓库</a>
-            </div>
+      <body class="hero-gradient min-h-screen flex items-center justify-center p-4">
+
+        <div class="animate-slide-up glass max-w-md w-full rounded-[2.5rem] shadow-2xl p-8 md:p-12 text-center">
+
+          <!-- Logo -->
+          <div class="relative mx-auto w-28 h-28 mb-6">
+            <div class="absolute inset-0 bg-blue-400 rounded-full blur-xl pulse-ring"></div>
+            <img src="${LOGO_URL}"
+                 class="relative w-28 h-28 rounded-full border-4 border-white shadow-lg object-cover"
+                 alt="辛巳学习网" />
           </div>
-        </main>
-        <script>
-          // 只让logo外圈渐变弧旋转，且裁剪为圆形局部
-          const arc = document.getElementById('logo-arc');
-          if (arc) {
-            arc.animate([
-              { transform: 'rotate(0deg)' },
-              { transform: 'rotate(360deg)' }
-            ], {
-              duration: 9000,
-              iterations: Infinity,
-              easing: 'linear'
-            });
-          }
-        </script>
+
+          <!-- 标题 -->
+          <h1 class="text-3xl font-extrabold text-slate-800 mb-1 tracking-tight">辛巳认证中心</h1>
+          <p class="text-slate-500 font-medium mb-8">Cloudflare Workers · 安全认证服务</p>
+
+          <!-- QQ 登录按钮 -->
+          <a href="/login"
+             class="btn-primary w-full flex items-center justify-center gap-3 py-4 text-white rounded-2xl font-bold text-lg mb-8 group">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" fill="rgba(255,255,255,0.25)"/>
+              <path d="M8 12l2.5 2.5L16 9" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            使用 QQ 登录
+          </a>
+
+          <!-- 使用须知 -->
+          <div class="bg-slate-50/80 rounded-2xl p-6 text-left border border-slate-100">
+            <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">使用须知</h2>
+            <ul class="space-y-3 text-sm text-slate-600">
+              <li class="flex items-start gap-2.5">
+                <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
+                <span>通过 <code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">/login</code> 跳转发起 QQ 登录授权</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
+                <span>认证成功后将自动跳转回 <b class="text-slate-700">lz-0315.com</b></span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
+                <span>由 Cloudflare Edge 网络提供全球加速与隐私保护</span>
+              </li>
+              <li class="flex items-start gap-2.5">
+                <span class="mt-0.5 w-2 h-2 rounded-full bg-blue-400 shrink-0"></span>
+                <span>支持多域名部署，<code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">REDIRECT_URI</code> 推荐填写 <code class="text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded text-xs font-mono">/qq</code></span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 页脚 -->
+          <footer class="mt-8 text-xs text-slate-400 flex items-center justify-center gap-1.5 flex-wrap">
+            <span>© 2026</span>
+            <a href="https://www.lz-0315.com" class="hover:text-blue-500 underline underline-offset-2">辛巳学习网</a>
+            <span class="mx-0.5">|</span>
+            <a href="https://github.com/lz-0315/auth_xinsi" class="hover:text-blue-500 underline underline-offset-2" target="_blank" rel="noopener">开源仓库</a>
+          </footer>
+        </div>
+
       </body>
     </html>
   `;
-        }
+}
+
+// ===================== 认证成功页 =====================
+export function renderResultPage(user) {
+  const gender = user.gender === '男' ? '男 ♂' : user.gender === '女' ? '女 ♀' : user.gender;
+  return `
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+      <head>
+        ${sharedHead('认证成功 - 辛巳认证中心')}
+        <style>
+          .progress-bar { height: 6px; background: #e2e8f0; border-radius: 999px; overflow: hidden; }
+          .progress-inner { height: 100%; background: linear-gradient(90deg,#12b7f5,#3b82f6); width: 0%; transition: width 3s linear; }
+          @keyframes checkPop {
+            0%   { transform: scale(0) rotate(-45deg); opacity: 0; }
+            60%  { transform: scale(1.15) rotate(0); opacity: 1; }
+            100% { transform: scale(1) rotate(0); opacity: 1; }
+          }
+          .check-pop { animation: checkPop 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards; opacity: 0; }
+        </style>
+      </head>
+      <body class="hero-gradient min-h-screen flex items-center justify-center p-4">
+        <div class="animate-slide-up glass max-w-md w-full rounded-[2.5rem] shadow-2xl p-8 md:p-10 flex flex-col items-center text-center">
+
+          <!-- 成功打勾动画 -->
+          <div class="relative w-20 h-20 mb-2">
+            <div class="absolute inset-0 bg-green-400 rounded-full blur-xl opacity-20 pulse-ring"></div>
+            <div class="check-pop relative w-20 h-20 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+              <svg class="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- 用户头像 -->
+          <img src="${user.figureurl_qq_2 || user.figureurl_qq_1}"
+               class="w-20 h-20 rounded-full border-4 border-white shadow-md mt-3 mb-3 object-cover" alt="avatar" />
+          <h1 class="text-2xl font-extrabold text-slate-800 mb-1">你好，${user.nickname}</h1>
+          <div class="text-slate-500 text-sm mb-4 space-x-3">
+            <span>${gender}</span>
+            <span>·</span>
+            <span>${user.province || ''} ${user.city || ''}</span>
+          </div>
+          <div class="text-slate-400 text-xs mb-5 font-mono bg-slate-50 px-3 py-1.5 rounded-lg">OpenID: ${user.openid}</div>
+
+          <!-- 进度条 -->
+          <div class="w-full mb-3">
+            <div class="progress-bar"><div class="progress-inner" id="progress"></div></div>
+          </div>
+          <div class="text-green-600 font-semibold text-sm mb-2">✅ 认证成功，3 秒后自动返回主站…</div>
+          <a href="https://lz-0315.com" class="text-blue-500 hover:text-blue-600 text-sm underline underline-offset-2">如未跳转请点此</a>
+        </div>
+        <script>
+          setTimeout(() => { document.getElementById('progress').style.width = '100%'; }, 50);
+          setTimeout(() => { window.location.href = 'https://lz-0315.com'; }, 3000);
+        <\/script>
+      </body>
+    </html>
+  `;
+}
+
+// ===================== 错误页 =====================
+export function renderErrorPage(msg) {
+  return `
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+      <head>
+        ${sharedHead('认证失败 - 辛巳认证中心')}
+      </head>
+      <body class="hero-gradient min-h-screen flex items-center justify-center p-4">
+        <div class="animate-slide-up glass max-w-md w-full rounded-[2.5rem] shadow-2xl p-8 md:p-10 text-center">
+          <div class="mx-auto w-16 h-16 bg-red-500 rounded-full flex items-center justify-center shadow-lg mb-5">
+            <svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-extrabold text-slate-800 mb-2">认证失败</h2>
+          <p class="text-slate-500 mb-6 text-sm leading-relaxed">${msg}</p>
+          <a href="/login"
+             class="btn-primary inline-flex items-center gap-2 px-8 py-3 text-white rounded-2xl font-bold text-base">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            重新登录
+          </a>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+// ===================== 管理/初始化页 =====================
+export function renderAdminPage(env) {
+  const vars = [
+    { key: 'QQ_APP_ID',    value: env.QQ_APP_ID },
+    { key: 'QQ_APP_KEY',   value: env.QQ_APP_KEY },
+    { key: 'REDIRECT_URI', value: env.REDIRECT_URI }
+  ];
+  return `
+    <!DOCTYPE html>
+    <html lang="zh-CN">
+      <head>
+        ${sharedHead('初始化 - 辛巳认证中心')}
+      </head>
+      <body class="hero-gradient min-h-screen flex items-center justify-center p-4">
+        <div class="animate-slide-up glass max-w-md w-full rounded-[2.5rem] shadow-2xl p-8 md:p-10">
+
+          <div class="flex items-center gap-3 mb-5">
+            <div class="w-12 h-12 bg-amber-500 rounded-2xl flex items-center justify-center shadow-md">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-xl font-extrabold text-slate-800">认证中心初始化</h2>
+              <p class="text-slate-400 text-sm">请配置以下环境变量</p>
+            </div>
+          </div>
+
+          <div class="bg-slate-50/80 rounded-2xl p-5 border border-slate-100 mb-6 space-y-3">
+            ${vars.map(s => `
+              <div class="flex items-center justify-between">
+                <code class="text-sm font-mono text-slate-600">${s.key}</code>
+                <span class="text-sm font-semibold ${s.value ? 'text-green-500' : 'text-red-400'}">${s.value ? '✅ 已设置' : '❌ 未设置'}</span>
+              </div>
+            `).join('')}
+          </div>
+
+          <p class="text-slate-400 text-xs mb-5">REDIRECT_URI 推荐: <code class="bg-blue-50 text-blue-600 px-1.5 py-0.5 rounded text-xs font-mono">https://auth.lz-0315.com/qq</code></p>
+
+          <a href="/login"
+             class="btn-primary w-full flex items-center justify-center gap-2 py-3 text-white rounded-2xl font-bold text-base">
+            去登录测试
+          </a>
+        </div>
+      </body>
+    </html>
+  `;
+}
