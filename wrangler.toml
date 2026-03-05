@@ -1,9 +1,6 @@
 name = "auth_xinsi"
-type = "javascript"
-account_id = ""
+main = "src/index.js"
 workers_dev = true
-route = ""
-zone_id = ""
 compatibility_date = "2026-03-05"
 
 [vars]
