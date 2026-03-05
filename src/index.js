@@ -82,7 +82,45 @@ export default {
     }
 
     // 4. 默认首页
-    return new Response("辛巳学习网认证中心已就绪", { status: 200 });
+    return new Response(await importHomePageHtml(), { status: 200, headers: { "Content-Type": "text/html; charset=utf-8" } });
+  // 动态加载首页 HTML（与 home-ui.js 分离，便于维护和现代化UI）
+  async function importHomePageHtml() {
+    // 这里直接读取 home-ui.js 的渲染函数
+    const mod = await import('./home-ui.js');
+    return mod.renderHomePage();
+  }
+  // --- 默认首页美化 ---
+  function renderHomePage() {
+    return `
+      <html>
+        <head>
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+        </head>
+        <body class="bg-gradient-to-br from-blue-100 to-blue-300 min-h-screen flex flex-col items-center justify-center">
+          <div class="bg-white bg-opacity-90 shadow-xl rounded-2xl p-10 flex flex-col items-center max-w-lg w-full">
+            <div class="text-4xl mb-4 font-extrabold text-blue-600 flex items-center gap-2">
+              <svg width="36" height="36" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="#3b82f6"/><text x="12" y="17" text-anchor="middle" font-size="14" fill="#fff" font-family="Arial">辛巳</text></svg>
+              认证中心
+            </div>
+            <div class="text-lg text-gray-700 mb-2">欢迎使用 <b>辛巳学习网认证中心</b></div>
+            <div class="text-gray-500 mb-6">基于 Cloudflare Workers · QQ OAuth2.0</div>
+            <a href="/login" class="px-6 py-2 bg-blue-500 text-white rounded-lg shadow hover:bg-blue-600 transition">QQ 登录</a>
+            <div class="mt-8 w-full">
+              <div class="text-base font-semibold text-blue-700 mb-2 mt-6">调用/使用说明</div>
+              <div class="bg-blue-50 border border-blue-200 rounded p-4 text-sm text-gray-700">
+                1. 前端静态站点通过 <span class="font-mono">/login</span> 跳转发起 QQ 登录。<br>
+                2. 用户授权后，回调 <span class="font-mono">/qq</span>，自动获取用户信息。<br>
+                3. 登录成功后页面会自动跳转回主站，可根据需要自定义跳转逻辑。<br>
+                4. 支持多域名部署，<span class="font-mono">REDIRECT_URI</span> 推荐填写 <span class="font-mono">/qq</span>。
+              </div>
+            </div>
+            <div class="mt-8 text-xs text-gray-400">© 2026 <a href="https://www.lz-0315.com" class="underline hover:text-blue-500">辛巳学习网</a></div>
+          </div>
+        </body>
+      </html>
+    `;
+  }
   }
 };
 
