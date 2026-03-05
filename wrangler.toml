@@ -1,0 +1,13 @@
+name = "auth_xinsi"
+type = "javascript"
+account_id = ""
+workers_dev = true
+route = ""
+zone_id = ""
+compatibility_date = "2026-03-05"
+
+[vars]
+# QQ OAuth2.0 相关环境变量
+QQ_APP_ID = ""
+QQ_APP_KEY = ""
+REDIRECT_URI = ""
