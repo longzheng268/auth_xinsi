@@ -27,15 +27,10 @@
 ## ✨ 主要特性
 
 - **极致毛玻璃 UI**：所有页面均采用统一 Glassmorphism 风格，现代美观，适配移动端和桌面端。
-- **统一头像图标**：所有页面 logo 均引用 [GitHub 头像](https://github.com/longzheng268/homepage_xinsi/blob/main/assets/img/%E5%A4%B4%E5%83%8F.png?raw=true)，无需额外流量成本。
 - **认证成功页动画**：登录成功后有绿色圆圈打勾动画，用户体验更丝滑。
 - **静态 import 结构**：所有 UI 渲染函数（首页、结果页、错误页、管理页）均集中在 `src/home-ui.js`，主逻辑 `src/index.js` 只负责路由和 OAuth。
 - **安全响应头**：默认添加 `X-Content-Type-Options`、`X-Frame-Options`、`Referrer-Policy` 等安全头，防止常见攻击。
-- **开源仓库**：<https://github.com/lz-0315/auth_xinsi>
-
-## 🖼️ UI 预览
-
-![](https://github.com/longzheng268/homepage_xinsi/blob/main/assets/img/%E5%A4%B4%E5%83%8F.png?raw=true)
+- **开源仓库**：<https://github.com/longzheng268/auth_xinsi>
 
 首页、认证成功页、错误页、管理页均为毛玻璃风格，主色调蓝白，极简现代。
 
