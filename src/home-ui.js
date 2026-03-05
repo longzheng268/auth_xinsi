@@ -115,7 +115,7 @@ export function renderHomePage() {
             <span>© 2026</span>
             <a href="https://www.lz-0315.com" class="hover:text-blue-500 underline underline-offset-2">辛巳学习网</a>
             <span class="mx-0.5">|</span>
-            <a href="https://github.com/lz-0315/auth_xinsi" class="hover:text-blue-500 underline underline-offset-2" target="_blank" rel="noopener">开源仓库</a>
+            <a href="https://github.com/lz-0315/auth_xinsi" class="hover:text-blue-500 underline underline-offset-2" target="_blank" rel="noopener">辛巳统一登录接口开源仓库</a>
           </footer>
         </div>
 
