@@ -1,0 +1,29 @@
+# Node/JS/Cloudflare/IDE常用忽略
+node_modules/
+.DS_Store
+.env
+.env.*
+*.local
+*.log
+*.tmp
+*.swp
+*.swo
+*.vscode/
+.idea/
+*.code-workspace
+.cache/
+dist/
+build/
+wrangler.log
+wrangler-debug.log
+*.bak
+*.old
+*.zip
+*.tar.gz
+# Cloudflare Workers 本地调试/缓存
+.wrangler/
+# 其他
+coverage/
+*.test.js
+*.test.mjs
+*.test.ts
